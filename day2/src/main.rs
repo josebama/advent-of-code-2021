@@ -21,6 +21,7 @@ struct Command {
 struct Position {
     horizontal: isize,
     depth: isize,
+    aim: isize,
 }
 
 fn parse_direction(direction: &str) -> Direction {
@@ -48,20 +49,21 @@ fn apply_command(initial_position: Position, command: Command) -> Position {
             distance,
         } => Position {
             horizontal: initial_position.horizontal + distance,
+            depth: initial_position.depth + initial_position.aim * distance,
             ..initial_position
         },
         Command {
             direction: Direction::Down,
             distance,
         } => Position {
-            depth: initial_position.depth + distance,
+            aim: initial_position.aim + distance,
             ..initial_position
         },
         Command {
             direction: Direction::Up,
             distance,
         } => Position {
-            depth: initial_position.depth - distance,
+            aim: initial_position.aim - distance,
             ..initial_position
         },
         _ => initial_position,
@@ -84,6 +86,7 @@ fn main() {
     let mut position = Position {
         horizontal: 0,
         depth: 0,
+        aim: 0,
     };
     for command in commands {
         position = apply_command(position, command);
@@ -115,10 +118,11 @@ mod tests {
     }
 
     #[test]
-    fn test_apply_command() {
+    fn test_apply_command_down() {
         let initial_position = Position {
             horizontal: 0,
             depth: 0,
+            aim: 0,
         };
         let command = Command {
             direction: Direction::Down,
@@ -126,7 +130,27 @@ mod tests {
         };
         let expected_position = Position {
             horizontal: 0,
-            depth: 10,
+            depth: 0,
+            aim: 10,
+        };
+        assert_eq!(apply_command(initial_position, command), expected_position);
+    }
+
+    #[test]
+    fn test_apply_command_forward() {
+        let initial_position = Position {
+            horizontal: 0,
+            depth: 0,
+            aim: 10,
+        };
+        let command = Command {
+            direction: Direction::Forward,
+            distance: 100,
+        };
+        let expected_position = Position {
+            horizontal: 100,
+            depth: 1000,
+            aim: 10,
         };
         assert_eq!(apply_command(initial_position, command), expected_position);
     }
